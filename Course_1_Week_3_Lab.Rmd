@@ -1,5 +1,5 @@
 ---
-title: "Course 1 Week 3 Lab"
+title: "Course_1_Week_3_Lab"
 output: statsr:::statswithr_lab
 ---
 
