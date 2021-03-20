@@ -185,16 +185,14 @@ the mean of each sample, and store each result in a vector called
 **Exercise**: How many elements are there in `sample_means50`?  Describe the sampling distribution, and be sure to specifically note its center. Make sure to include a plot of the distribution in your answer.
 To check for the number of elements, nrow() can be used. 
 </div>
-```{r loop}
-
-nrow(sample_means50)
+```{r sampling-dist}
 sample_means50 %>%
   summarise(mean = mean(x_bar), pop_med = median(x_bar), 
             standard_deviation = sd(x_bar), pop_iqr = IQR(x_bar),
             pop_min = min(x_bar), pop_max = max(x_bar),
             pop_q1 = quantile(x_bar, 0.25),  # first quartile, 25th percentile
             pop_q3 = quantile(x_bar, 0.75))  # third quartile, 75th percentile
-
+nrow(sample_means50)
 mean(sample_means50$x_bar)
 sd(sample_means50$x_bar)
 
