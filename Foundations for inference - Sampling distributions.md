@@ -185,7 +185,7 @@ the mean of each sample, and store each result in a vector called
 **Exercise**: How many elements are there in `sample_means50`?  Describe the sampling distribution, and be sure to specifically note its center. Make sure to include a plot of the distribution in your answer.
 To check for the number of elements, nrow() can be used. 
 </div>
-```{r sampling-dist}
+```{r loop}
 
 nrow(sample_means50)
 sample_means50 %>%
