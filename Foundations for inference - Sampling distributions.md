@@ -98,8 +98,7 @@ samp1 <- ames %>%
   sample_n(size = 50)
 ```
 
-This command collects a simple random sample of `size` 50 from the `ames` dataset, 
-which is assigned to `samp1`. This is like going into the City 
+This command collects a simple random sample of `size` 50 from the `ames` dataset, which is assigned to `samp1`. This is like going into the City 
 Assessor's database and pulling up the files on 50 random home sales. Working 
 with these 50 files would be considerably simpler than working with all 2930 
 home sales.
@@ -114,9 +113,12 @@ samp1 %>%
             pop_min = min(area), pop_max = max(area),
             pop_q1 = quantile(area, 0.25),  # first quartile, 25th percentile
             pop_q3 = quantile(area, 0.75))  # third quartile, 75th percentile
-
+```
+```{r samp2}
 samp2 <- ames %>%
   sample_n(size = 100)
+```
+```{r samp2-dist}
 samp2 %>%
   summarise(mean = mean(area), pop_med = median(area), 
             standard_deviation = sd(area), pop_iqr = IQR(area),
@@ -181,6 +183,7 @@ the mean of each sample, and store each result in a vector called
 
 <div id="exercise">
 **Exercise**: How many elements are there in `sample_means50`?  Describe the sampling distribution, and be sure to specifically note its center. Make sure to include a plot of the distribution in your answer.
+To check for the number of elements, nrow() can be used. 
 </div>
 ```{r sampling-dist}
 
@@ -196,8 +199,6 @@ mean(sample_means50$x_bar)
 sd(sample_means50$x_bar)
 
 ```
-
-To check for the number of elements, nrow() can be used. 
 
 ## Interlude: Sampling distributions
 
