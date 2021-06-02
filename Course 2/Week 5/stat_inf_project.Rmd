@@ -1,0 +1,155 @@
+---
+title: "Statistical inference with the GSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(statsr)
+```
+
+### Load data
+
+Make sure your data and R Markdown files are in the same directory. When loaded
+your data file will be called `gss`. Delete this note when before you submit 
+your work. 
+
+```{r load-data}
+load("gss.Rdata")
+```
+
+
+
+* * *
+
+## Part 1: Data
+The General Social Survey (GSS) is a nationally representative survey of the attitudes and behaviors of adults in the
+United States, which has been conducted annually or biannually since 1972. The data being used in this course is extracted from the GSS with a sample of selected indicators and missing value removal. 
+1972 - 1974, surveys followed a modified probability sample design 
+1975 - 1977: surveys followed a full probability sample design. During this period, the 1975 and 1976 studies were conducted with a transitional sample design, one-half full probability and one-half block quota.
+1978 - 2012: surveys followed full probability sample design.
+Probability sample is a stratified, multistage area probability sample of clusters of households in the
+continental United States. Block quota is a multi-stage area probability sample to the block or segment level.
+
+From the above information, it has been seen that, by using random sampling, the result getting from this data set is possible to generalize to US population. About the causality, the design of this study is cross sectional, no random assignment and all the data was asked at the same time, there is no causality relationship in this study design. 
+
+Besides, non-response bias (due to the length of the interview, the excluding Spanish speaking people) can happen. 
+
+* * *
+
+## Part 2: Research question
+
+Since 2015, US Supreme Court ruled gay marriage is legal nationwide. Before that, how was the public opinion of homo-sex? To take a look into the past, I want to see the changes in proportion of homo-sex agreement among American people following years. And seeing the difference of public opinion before and after 2008. I choose the year 2008 because this is the first year some states in America consider same-sex marriage is legal.    
+Then my reseach question is:
+Is there any difference in the proportion of homosexual agreement between 1973 and 2008?
+Is there any difference in the proportion of homosexual agreement between 2008 and 2012?
+The reason of not comparing between 1972 and 2007 will be explained at the end of this assignment.
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+Checking the condition for applying the central limit theorem
+```{r}
+table(gss$homosex)
+```
+Data set men has 57061 observations, and the number of people answering "Not wrong at all" is more than 10.
+It means satisfying the CLT (independent observation and sufficiently large sample size). 
+
+```{r}
+gss %>% filter(!is.na(homosex)) %>%
+      ggplot(aes(x=year, 
+            fill= factor(homosex, 
+                  levels = c("Not Wrong At All", "Sometimes Wrong", "Almst Always Wrg", "Always Wrong", "Other"))))+
+      geom_bar(position = "fill")+
+      scale_fill_brewer(palette = "Set3")+
+      labs(x="Year", y="Percent",
+           fill = "Homosex agreement",
+           title = "Homosex perception among U.S citizen")+
+      theme_minimal()
+```
+
+We can see the increase in the percentage of agreement with homosex following by the year.
+
+* * *
+
+## Part 4: Inference
+My hypothesis for the first question is:
+
+Ho: P(agree) in 1973 = P(agree) in 2008
+
+Ha: P(agree) in 1973 ≠ P(agree) in 2008
+
+My hypothesis for the second question is:
+
+Ho: P(agree) in 2008 = P(agree) in 2012
+
+Ha: P(agree) in 2008 ≠ P(agree) in 2012
+
+
+USING HYPOTHSIS TEST
+```{r}
+data <- gss %>% filter(!is.na(homosex)) 
+percept <- ifelse(data$homosex == "Not Wrong At All", "Agree", "Not Agree")
+data1 <- data.frame(data, percept)
+```
+```{r}
+data2 <- data1 %>% filter(year %in% c("1973", "2008"))
+inference(data = data2, y = percept, as.factor(year), statistic = "proportion", type = "ht", method = "theoretical",
+          null = 0, alternative = "twosided", success = "Agree")
+data3 <- data1 %>% filter(year %in% c("2008", "2012"))
+inference(data = data3, y = percept, as.factor(year), statistic = "proportion", type = "ht", method = "theoretical",
+          null = 0, alternative = "twosided", success = "Agree")
+```
+
+According to the p-value, both are smaller than 0.05. Then we can conclude:
+There is a significant difference of percentage of homosex agreement between 1973 and 2008.
+There is a significant difference of percentage of homosex agreement between 1973 and 2008.
+
+USING CONFIDENCE INTERVAL
+```{r}
+data2 <- data1 %>% filter(year %in% c("1973", "2008"))
+inference(data = data2, y = percept, as.factor(year), statistic = "proportion", type = "ci", method = "theoretical",
+          null = 0, alternative = "twosided", success = "Agree")
+data3 <- data1 %>% filter(year %in% c("2008", "2012"))
+inference(data = data3, y = percept, as.factor(year), statistic = "proportion", type = "ci", method = "theoretical",
+          null = 0, alternative = "twosided", success = "Agree")
+```
+
+The confidence interval and hypothesis test gives the proof to indicate the same conclusion. Because, both confidence interval don't include 0. 
+
+It is not available to comparing between 1972 and 2007 because in 1972 and 2007, there is no information about homosex perception. All value were missing. Therefore, I used the data in 1973 to compare with the data in 2008. 
+```{r}
+gss %>% filter(year== "1972") %>%
+      ggplot(aes(x=year, 
+            fill= factor(homosex, 
+                  levels = c("Not Wrong At All", "Sometimes Wrong", "Almst Always Wrg", "Always Wrong", "Other"))))+
+      geom_bar(position = "fill")+
+      scale_fill_brewer(palette = "Set3")+
+      labs(x="Year", y="Percent",
+           fill = "Homosex agreement",
+           title = "Homosex perception among U.S citizen in 1972")+
+      theme_minimal()
+
+gss %>% filter(year== "2007") %>%
+      ggplot(aes(x=year, 
+            fill= factor(homosex, 
+                  levels = c("Not Wrong At All", "Sometimes Wrong", "Almst Always Wrg", "Always Wrong", "Other"))))+
+      geom_bar(position = "fill")+
+      scale_fill_brewer(palette = "Set3")+
+      labs(x="Year", y="Percent",
+           fill = "Homosex agreement",
+           title = "Homosex perception among U.S citizen in 2007")+
+      theme_minimal()
+```
+
+* * *
