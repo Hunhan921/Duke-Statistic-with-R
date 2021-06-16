@@ -15,16 +15,13 @@ output:
 library(ggplot2)
 library(dplyr)
 library(statsr)
+library(GGally)
 ```
 
 ### Load data
 
-Make sure your data and R Markdown files are in the same directory. When loaded
-your data file will be called `movies`. Delete this note when before you submit 
-your work. 
-
 ```{r load-data}
-#load("movies.Rdata")
+load("movies.Rdata")
 ```
 
 
@@ -32,39 +29,131 @@ your work.
 * * *
 
 ## Part 1: Data
+Generabizability: The data set is comprised of 651 randomly sampled movies produced and released before 2016.
+Therefore, the result from this data set can be generalized for a bigger population where it is sampled (for example: the population can be all movies produced and released before 2016 and being available on 2 websites: Rotten Tomatoes and IMDB)
 
+Causality: there is no further information mentioning whether random assignment was used. However, it has known that this is a cross-sectional study or a survey. Therefore, causality is not applicable in this case.
 
+Besides, some bias might exist. We dont know for sure all audience watched full movie or not before scoring this movie. And, even one account can score 1 movie 1 time. It doesn't mean that 1 person has only 1 account and score one movie 1 time only.  
 * * *
 
 ## Part 2: Research question
 
+Is there a significant association between `critics score` and `audience score` adjusted by other variables, such as `genre`, `mpaa_rating`, `imdb_rating`, `best_pic_win`, `best_actor_win`, `best_actress_win` and `best_dir_win`. 
 
+I think normally when critics score increases, the audience score increase also. However, I want to explore the effect of other variables into this relationship.
 
 * * *
 
 ## Part 3: Exploratory data analysis
+```{r}
+summary(movies$audience_score)
+hist(movies$audience_score)
+```
 
-NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
-button above. Make sure that your code is visible in the project you submit. 
-Delete this note when before you submit your work.
+The slightly left skewness of data suggests that audiences are more likely to evaluate the movies highly.
+
+```{r}
+ggplot(data = movies, aes(y=audience_score, x=critics_score))+
+      geom_jitter()+
+      geom_smooth(method = "lm")
+
+movies %>% 
+      summarise(cor(audience_score, critics_score))
+```
+
+Look like there is a positive trend between the audience score and critics score on Rotten Tomatoes. Also, they are highly correlated to each others 
+
+```{r}
+ggpairs(movies, columns = c(13,16))
+```
+
+IMDB rating and Critics Score are collinear. We might consider collinearity when adding both of them in the multiple linear regression model
 
 * * *
 
 ## Part 4: Modeling
 
-NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
-button above. Make sure that your code is visible in the project you submit. 
-Delete this note when before you submit your work.
+```{r}
+mlr <- lm(data = movies, audience_score ~ critics_score + genre + mpaa_rating + imdb_rating +
+                best_pic_win + best_actor_win + best_actress_win + best_dir_win)
+summary(mlr)
+```
+First, 8 independent variables are included in the multiple linear regression model to explain for the audience score variable. Using p-value to choose a best model.
+
+```{r}
+#best_pic_win had the highest p value in the 1st model
+mlr <- lm(data = movies, audience_score ~ critics_score + genre + mpaa_rating + imdb_rating +
+             best_actor_win + best_actress_win + best_dir_win)
+summary(mlr)
+```
+
+`mpaa_rating` had the highest p-value in 2nd model. Then, try dropping the variable `mpaa_rating`
+```{r}
+mlr <- lm(data = movies, audience_score ~ critics_score + genre + imdb_rating +
+             best_actor_win + best_actress_win + best_dir_win)
+summary(mlr)
+```
+`best_dir_win` had the highest p-value in 3rd model. Then, try dropping the variable `best_dir_win`
+```{r}
+mlr <- lm(data = movies, audience_score ~ critics_score + genre + imdb_rating + best_actor_win +
+                best_actress_win)
+summary(mlr)
+```
+
+`best_actor_win` had the highest p-value in 4th model. Then, try dropping the variable `best_actor_win` 
+```{r}
+mlr <- lm(data = movies, audience_score ~ critics_score + genre + imdb_rating + best_actress_win)
+summary(mlr)
+```
+
+`best_actress_win` had the highest p-value in 5th model. Then, try dropping the variable `best_actress_win`
+```{r}
+mlr <- lm(data = movies, audience_score ~ critics_score + genre + imdb_rating)
+summary(mlr)
+```
+
+Due to the collinearity between `critics_score` and `imdb_rating`, let's try dropping the variable `imdb_rating`  
+```{r}
+mlr <- lm(data = movies, audience_score ~ critics_score + genre)
+summary(mlr)
+```
+
+The Adjusted R square decreases from 0.7643 to 0.5197, and the beta value for `critics_score` increase from 0.06687 to 0.45828. Our final model includes `critics_score` and `genre` as the independent variables.
+
+```{r}
+plot(mlr$residuals~mlr$fitted.values)
+qqnorm(mlr$residuals)
+```
+
+P-values and parameter estimates are trusted because the conditions for the regression are reasonable, interpreting from the diagnostic plots above
+
+Interpretation the regression coefficients:
+
+All else held constant, for one critics score increases, we would expect audience score to be higher on average by 0.46.
+
+All else held constant, we would expect audience score of animation to be higher on average 4.63 comparing to action and adventure movie. The similar interpretation can be done for other categories of the variable `genre`.
 
 * * *
 
 ## Part 5: Prediction
 
-NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
-button above. Make sure that your code is visible in the project you submit. 
-Delete this note when before you submit your work.
+The movie I chose is [Dangal](https://www.imdb.com/title/tt5074352/). It was released in Dec, 2016. 
+According to [IMDB](https://www.imdb.com/title/tt5074352/), its genre can be categorized as Action, Biography, Drama, Sport. According to [Rotten Tomatoes](https://www.rottentomatoes.com/m/dangal), critics score is 88.
+
+I decided putting this movie in Drama bracket.
+
+```{r}
+dangal <- data.frame(critics_score = 88, genre = "Drama")
+predict(mlr, dangal, interval = "prediction", level = 0.95)
+```
+Hence, the model predicts, with 95% confidence, that Dangal movie, a drama movie, with critics score of 88 is expected to have audience score between 49.57 and 104.75. 
 
 * * *
 
 ## Part 6: Conclusion
+I personally think the final model is not good for prediction. The R square is 0.52, meaning 52% the variance of the audience score can be explained by the model (including 2 variables). 
 
+However, looking at the research question, we can see a significant association between `critics score` and `audience score` being adjusted by the `genre`.
+
+A short coming of this analysis is no considering to number of observation in each group of genre. It can leads to the type II error when the number of observation is too low.
