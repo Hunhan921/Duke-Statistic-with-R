@@ -1,0 +1,93 @@
+---
+title: "Week 2"
+author: "Thang"
+date: "6/23/2021"
+output: html_document
+---
+
+```{r echo=FALSE, message=FALSE}
+library(tidyverse)
+library(statsr)
+```
+<div class="question">
+Question 1.
+Answer: The posterior is a mixture of prior and the likelihood - as we 
+collect data we expect the likelihood will be favored over the prior. In
+this case with 10 observed data points we would expect the posterior to
+shift further from the prior.
+</div>
+
+<div class="question">
+Question 4. Question 4
+If you are told that the prior for parameter \thetaθ has a distribution from family A and that it is conjugate to the likelihood from family B, then to which distribution family will the posterior belong?
+
+* The posterior will belong to the B family
+* We need to know more about the 2 distributions
+* The posterior will belong to the A family
+</div>
+
+Answer: If a prior is conjugate to the likelihood, the posterior will have the same distribution as the prior
+
+<div class="question">
+Question 5. You are hired as a data analyst by politician A. She wants to know the proportion
+of people in Metrocity who favor her over politician B. From previous poll
+numbers, you place a Beta(40,60) prior on the proportion. From polling 200
+randomly sampled people in Metrocity, you find that 103 people prefer politician
+A to politician B. What is the posterior probability that the majority of
+people prefer politician A to politican B (i.e. P(p>0.5|data))? 
+
+* 0.198
+* -> 0.209
+* 0.664
+* 0.934
+</div>
+
+```{r}
+1-pbeta(q = 0.5, shape1 = 40+103, shape2 = 60 + 200 - 103)
+```
+
+<div class="question">
+Question 6. A young meteorologist is trying to estimate the expected number of tropical cyclones that occur in a given year.  He assumes that the number of observed tropical cyclones in a year follows a Poisson distribution with rate $\lambda$ that is consistent across years.  Because the meteorologist is inexperienced, he assigns a relatively uninformative Gamma(k = .5,\theta = 2)Gamma(k=.5,θ=2) prior distribution to $\lambda$.  During his first five years, he observes a total of 49 cyclones.  If he were to collect more data about tropical cyclones in future years, what should his prior be?? 
+
+* Gamma (k=49.5, theta = 7)
+* Gamma (k=49.5, theta = 2/21)
+* -> Gamma (k=49.5, theta = 2/11)
+* Gamma (k=49, theta = 7)
+</div>
+
+<div class="question">
+Question 10. Suppose you are given a die and told that the die is either fair or is loaded (it
+always comes up as a 6). Since most dice are not loaded, you place a prior
+probability of 0.8  on the outcome that the die is fair. You roll a die and it comes up as a 6. 
+What is the posterior probability that your next roll will also be a 6?
+
+*4/5
+*3/5
+*11/15
+*-> 2/3
+</div>
+
+After the first dice, the posterior of the dice is fair is 
+
+```{r}
+post <- 1/6*0.8/(1/6*0.8+1*0.2)
+```
+
+Because, a dice has 6 value. The probability of the dice coming up as 6 is 1/6. 
+The total probability of the dice is 1, because we think it is fair.
+
+If the next roll will also be 6, then the probability is the sum of
+
+(the probability when it fair and got 6 + the probability when it is loaded)
+
+```{r}
+1/6*post+(1-post)*1
+```
+
+<div class="question">
+True or False: When constructing a 95% credible interval, a good rule of thumb is to use the shortest of all such intervals
+
+* -> True
+* False
+</div>
+
